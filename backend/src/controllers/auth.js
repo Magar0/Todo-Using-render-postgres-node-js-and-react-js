@@ -10,7 +10,7 @@ const drizzle_1 = require("../db/drizzle");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const dotenv_1 = require("dotenv");
-(0, dotenv_1.config)({ path: ".env.local" });
+(0, dotenv_1.config)({ path: ".env" });
 const createToken = ({ email, name, userId, expiresIn = "1h", }) => {
     const token = jsonwebtoken_1.default.sign({ email, name, userId }, process.env.JWT_SECRET, {
         expiresIn,

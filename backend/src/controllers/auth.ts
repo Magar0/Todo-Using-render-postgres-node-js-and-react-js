@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { config } from "dotenv";
 import { StringValue } from "ms";
 
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 const createToken = ({
   email,

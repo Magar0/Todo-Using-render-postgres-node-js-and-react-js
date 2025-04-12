@@ -1,7 +1,7 @@
 const dotEnv = require("dotenv");
 const drizzle = require("drizzle-kit");
 
-dotEnv.config({ path: ".env.local" });
+dotEnv.config({ path: ".env" });
 
 export default drizzle.defineConfig({
   out: "./src/db/migrations",

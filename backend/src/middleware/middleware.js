@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
 const dotenv_1 = require("dotenv");
-(0, dotenv_1.config)({ path: ".env.local" });
+(0, dotenv_1.config)({ path: ".env" });
 const authMiddleware = (req, res, next) => {
     console.log("running");
     try {
