@@ -20,7 +20,8 @@ const createToken = ({ email, name, userId, expiresIn = "1h", }) => {
 const signup = async (req, res) => {
     const { name, email, password, } = req.body;
     if (!name || !email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
+        res.status(400).json({ message: "All fields are required" });
+        return;
     }
     try {
         const existingUser = await drizzle_1.db
@@ -29,7 +30,8 @@ const signup = async (req, res) => {
             .where((0, drizzle_orm_1.eq)(schema_1.users.email, email))
             .limit(1);
         if (existingUser.length > 0) {
-            return res.status(400).json({ message: "Email already registered" });
+            res.status(400).json({ message: "Email already registered" });
+            return;
         }
         const hashedPassword = await bcryptjs_1.default.hash(password, 12);
         const [newUser] = await drizzle_1.db
@@ -47,14 +49,15 @@ const signup = async (req, res) => {
     }
     catch (error) {
         console.error("Error creating user:", error);
-        res.status(500).json({ error: "Failed to create user" });
+        res.status(500).json({ message: "Failed to create user" });
     }
 };
 exports.signup = signup;
 const login = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
+        res.status(400).json({ message: "All fields are required" });
+        return;
     }
     try {
         const existingUser = await drizzle_1.db
@@ -63,17 +66,19 @@ const login = async (req, res) => {
             .where((0, drizzle_orm_1.eq)(schema_1.users.email, email))
             .limit(1);
         if (!existingUser.length) {
-            return res.status(400).json({ message: "User doesn't exist" });
+            res.status(400).json({ message: "User doesn't exist" });
+            return;
         }
         const isPasswordCrt = await bcryptjs_1.default.compare(password, existingUser[0].password);
         if (!isPasswordCrt) {
-            return res.status(400).json({ message: "Password Wrong" });
+            res.status(400).json({ message: "Password Wrong" });
+            return;
         }
         const token = createToken({
             email,
             name: existingUser[0].name,
             userId: existingUser[0].id,
-            expiresIn: "15m",
+            expiresIn: "1m",
         });
         res.status(201).json({
             data: { email, name: existingUser[0].name, userId: existingUser[0].id },
@@ -81,7 +86,7 @@ const login = async (req, res) => {
         });
     }
     catch (err) {
-        res.status(500).json({ error: "Something went wrong" });
+        res.status(500).json({ message: "Something went wrong" });
     }
 };
 exports.login = login;

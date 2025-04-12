@@ -8,15 +8,20 @@ const authMiddleware = (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
         if (!token) {
-            return res.status(401).json({ message: "Unauthorized" });
+            res.status(401).json({ message: "Authorization token missing" });
+            return;
         }
         // const decodedData= verify(token,process.env.JWT_SECRET)
         // req.userId= decodedData.userId;
         //alternate way
         (0, jsonwebtoken_1.verify)(token, process.env.JWT_SECRET, (err, decoded) => {
-            console.log({ decoded });
             if (typeof decoded === "string" || !decoded?.userId) {
-                return res.status(401).json({ error: "Invalid token" });
+                res.status(401).json({ error: "Invalid token" });
+                return;
+            }
+            if (decoded?.exp && Date.now() >= decoded.exp * 1000) {
+                res.status(401).json({ message: "Token expired" });
+                return;
             }
             req.userId = decoded.userId;
             next();

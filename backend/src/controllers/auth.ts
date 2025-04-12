@@ -32,7 +32,8 @@ export const signup = async (req: Request, res: Response) => {
     password,
   }: { name: string; email: string; password: string } = req.body;
   if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+    res.status(400).json({ message: "All fields are required" });
+    return;
   }
 
   try {
@@ -42,7 +43,8 @@ export const signup = async (req: Request, res: Response) => {
       .where(eq(users.email, email))
       .limit(1);
     if (existingUser.length > 0) {
-      return res.status(400).json({ message: "Email already registered" });
+      res.status(400).json({ message: "Email already registered" });
+      return;
     }
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -61,14 +63,15 @@ export const signup = async (req: Request, res: Response) => {
     res.status(201).json({ data: { email, name, userId: newUser.id }, token });
   } catch (error) {
     console.error("Error creating user:", error);
-    res.status(500).json({ error: "Failed to create user" });
+    res.status(500).json({ message: "Failed to create user" });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
   const { email, password }: { email: string; password: string } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+    res.status(400).json({ message: "All fields are required" });
+    return;
   }
 
   try {
@@ -78,26 +81,28 @@ export const login = async (req: Request, res: Response) => {
       .where(eq(users.email, email))
       .limit(1);
     if (!existingUser.length) {
-      return res.status(400).json({ message: "User doesn't exist" });
+      res.status(400).json({ message: "User doesn't exist" });
+      return;
     }
     const isPasswordCrt = await bcrypt.compare(
       password,
       existingUser[0].password
     );
     if (!isPasswordCrt) {
-      return res.status(400).json({ message: "Password Wrong" });
+      res.status(400).json({ message: "Password Wrong" });
+      return;
     }
     const token = createToken({
       email,
       name: existingUser[0].name,
       userId: existingUser[0].id,
-      expiresIn: "15m",
+      expiresIn: "1m",
     });
     res.status(201).json({
       data: { email, name: existingUser[0].name, userId: existingUser[0].id },
       token,
     });
   } catch (err) {
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
