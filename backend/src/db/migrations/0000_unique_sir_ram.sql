@@ -21,8 +21,7 @@ CREATE TABLE "tasks" (
 	"created_by_id" uuid NOT NULL,
 	"assigned_to_id" uuid,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "tasks_title_unique" UNIQUE("title")
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
