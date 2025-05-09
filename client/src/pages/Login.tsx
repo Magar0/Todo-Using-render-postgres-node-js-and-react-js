@@ -31,9 +31,12 @@ const Login = () => {
       // setting token in local storage
       localStorage.setItem("token", JSON.stringify(res.data?.token));
       // setting in redux store
-      const { name, email, userId } = res.data.data;
+      const { name, email, userId, username } = res.data.data;
       dispatch(
-        setUser({ user: { name, email, userId }, isAuthenticated: true }),
+        setUser({
+          user: { name, email, userId, username },
+          isAuthenticated: true,
+        }),
       );
       toast.success("Login Successfully");
       navigate("/");

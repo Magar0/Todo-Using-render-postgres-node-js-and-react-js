@@ -9,6 +9,7 @@ interface FormData {
   name: string;
   email: string;
   password: string;
+  username: string;
 }
 
 const Signup = () => {
@@ -17,6 +18,7 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
+    username: "",
   });
   const dispatch = useDispatch();
 
@@ -32,9 +34,12 @@ const Signup = () => {
       // setting token in local storage
       localStorage.setItem("token", JSON.stringify(res.data?.token));
       // setting in redux store
-      const { name, email, userId } = res.data.data;
+      const { name, email, userId, username } = res.data.data;
       dispatch(
-        setUser({ user: { name, email, userId }, isAuthenticated: true }),
+        setUser({
+          user: { name, email, userId, username },
+          isAuthenticated: true,
+        }),
       );
       toast.success("Created account Successfully");
       navigate("/");
@@ -61,6 +66,18 @@ const Signup = () => {
               type="text"
               placeholder="type your name"
               value={formData.name}
+              required
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label htmlFor="username">Username</label>
+            <input
+              name="username"
+              id="username"
+              type="text"
+              placeholder="Username"
+              value={formData.username}
               required
               onChange={handleChange}
             />
