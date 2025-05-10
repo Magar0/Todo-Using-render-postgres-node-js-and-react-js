@@ -1,6 +1,7 @@
 # Task Manager Application
 
-![Task Manager Screenshot](https://github.com/user-attachments/assets/2a49bc50-3f6d-4c05-9ee8-a4945b836441)  
+![29](https://github.com/user-attachments/assets/2c0190df-0253-48f3-afea-0e0187e903ea)
+
 *A full-stack task management application with JWT authentication*
 
 ## 📋 <a name="table">Table of Contents</a>
