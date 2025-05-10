@@ -16,7 +16,7 @@
 ##  <a name="live"> 🟢Live Demo</a>
 - Frontend: [Vercel App](https://todo-using-render-postgres-node-js-and-react-js.vercel.app/)
 - Backend API: [Render Service](https://todo-using-render-postgres-node-js-and.onrender.com/)
-- Yotube demo: https://youtu.be/nszUY-jpLHE
+- Yotube demo: https://youtu.be/2K0u2GlOG5Y
   
 ## 📌  <a name="overview"> Project Overview </a>
 A secure **full-stack task management system** where users can:
@@ -29,6 +29,8 @@ A secure **full-stack task management system** where users can:
 ✔️ Protected routes with JWT  
 ✔️ Real-time task updates  
 ✔️ PostgreSQL with Drizzle ORM    
+✔️ Real Time notification using Web Socket
+✔️ Task assignee feature
 
    
 ##  <a name="features">🔋Features </a>
@@ -36,7 +38,7 @@ A secure **full-stack task management system** where users can:
 - 🔒 Secure password storage using bcrypt
 - 📝 Create, read, update, and delete tasks
 - 🗂️ Task organization with timestamps
-- 🔄 Real-time updates
+- 🔄 Real-time updates and Notifications
 - 🚀 Protected routes for authenticated users
 
 ##  <a name="tech-stack">⚙️ Tech Stack </a>
@@ -104,22 +106,37 @@ npm start
 ### Authentication
 | Endpoint       | Method | Description           | Request Body                              |
 |----------------|--------|-----------------------|-------------------------------------------|
-| `/api/auth/signup` | POST   | Register new user     | `{ name, email, password }`               |
+| `/api/auth/signup` | POST   | Register new user     | `{ name, username, email, password }`               |
 | `/api/auth/login`  | POST   | Login existing user   | `{ email, password }`                     |
 
-### Tasks (Requires JWT)
+
+### Users (Requires JWT)
 | Endpoint            | Method | Description           | Request Body                              |
 |---------------------|--------|-----------------------|-------------------------------------------|
-| `/api/task`         | GET    | Get all user tasks    | -                                         |
-| `/api/task`         | POST   | Create new task       | `{ title, description }`                  |
-| `/api/task/:taskId` | PUT    | Update task           | `{ title, description, done }`            |
-| `/api/task/:taskId` | DELETE | Delete task           | -                                         |
+| `/api/users`        | GET    | Get all users         | -                                         |
+| `/api/users/:id`    | GET    | Get specific user     | -                                         |
+
+### Tasks (Requires JWT)
+| Endpoint                     | Method | Description                     | Request Body                                      |
+|------------------------------|--------|---------------------------------|---------------------------------------------------|
+| `/api/task`                  | GET    | Get tasks created by user       | -                                                 |
+| `/api/task/assignedTask`     | GET    | Get tasks assigned to user      | -                                                 |
+| `/api/task`                  | POST   | Create new task                 | `{ title, description, dueDate, priority, status, assignedToId? }` |
+| `/api/task/:taskId`          | PUT    | Update task                     | `{ title?, description?, dueDate?, priority?, status?, assignedToId? }` |
+| `/api/task/:taskId`          | DELETE | Delete task                     | -                                                 |
+
+### Notifications (Requires JWT)
+| Endpoint                     | Method | Description                     | Request Body                                      |
+|------------------------------|--------|---------------------------------|---------------------------------------------------|
+| `/api/notification`          | GET    | Get user notifications         | -                                                 |
+| `/api/notification`          | PUT    | Mark notification as read       | `{ notificationId }`
 
 ##   <a name="schema">  🗃️ Database Schema </a>
 ```typescript
 // Users Table
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
+  username: varchar("user_name", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
@@ -129,13 +146,35 @@ export const users = pgTable("users", {
 // Tasks Table
 export const tasks = pgTable("tasks", {
   id: uuid("id").defaultRandom().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
-  done: boolean().default(false).notNull(),
+  dueDate: timestamp("due_date", { withTimezone: true }),
+  priority: priorityEnum("priority").default("medium").notNull(),
+  status: statusEnum("status").default("todo").notNull(),
+  createdById: uuid("created_by_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  assignedToId: uuid("assigned_to_id").references(() => users.id, {
+    onDelete: "cascade",
+  }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
     .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  taskId: uuid("task_id")
+    .references(() => tasks.id, { onDelete: "cascade" })
+    .notNull(),
+  type: notificationEnum("type").notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
     .notNull(),
 });
 ```
